@@ -130,14 +130,6 @@ end
 
 while (command = gets.chomp.split(" "))[0].upcase != 'EXIT'
     case command[0].upcase
-    when "HELP"
-        puts "Commands: "
-        puts "Run the vertex displayer: \nrun\n"
-        puts "Read contents of a file: \nread {filename}\n"
-        puts "Retrieve vertices from file: \ngetVert [filename]\n"
-        puts "Modify existing vertex: \nm {Vertex Number} {0 => x, 1 => y, 2 => z} ['+', '-'] {New Value}\n"
-        puts "Add new vertex: \na {x} {y} {z}\n"
-        puts "Exit program: \nexit"
     when "GETVERT"
         if command[1] == nil
             command[1] = "bunny"
@@ -160,7 +152,7 @@ while (command = gets.chomp.split(" "))[0].upcase != 'EXIT'
          puts $?.exitstatus
     when "SAVE"
         @models.save @vertices, nil
-    when "A"
+    when "VADD"
         if command[1] == nil or command[2] == nil or command[3] == nil
             puts "Arguments missing!"
             next
@@ -168,7 +160,7 @@ while (command = gets.chomp.split(" "))[0].upcase != 'EXIT'
         @vertices.push command[1]
         @vertices.push command[2]
         @vertices.push command[3]
-    when "M"
+    when "VMOD"
         if command[1] == nil or command[2] == nil or command[3] == nil
             puts "Arguments missing!"
             next
@@ -192,6 +184,72 @@ while (command = gets.chomp.split(" "))[0].upcase != 'EXIT'
             nums.each do |n|
                 @vertices.push n
             end
+        end
+    when "NAME"
+        if command[1] != nil
+            @models.name = command[1]
+        end
+    when "HELP"
+        if command[1] == "--example"
+            #Full usage example
+            puts "Step 1: getModel {model_name}"
+            puts "Line that starts with 'model_name' from 'models.data' is loaded -- vertices and indices"
+            puts "Step 2: run"
+            puts "Runs the displayer program"
+            puts "Step 3: pull  (pullv for vertices, pulli for indices)"
+            puts "After saving verts and ind from the program, import them here"
+            puts "Step 4: save"
+            puts "Overwrite the old model with the new stuff"
+            puts "Step 5: exit"
+            puts "Done :)"
+        elsif command[1] == "--model"
+            puts "A model had 3 parts: Name, Vertices, Indices"
+            puts
+            puts "Models:"
+            puts "  getModel {Model_Name}"
+            puts "  newModel {Model_Name}"
+            puts "  run (opens Displayer)"
+            puts
+            puts "Name:"
+            puts "  name {new_name}"
+            puts
+            puts "Vertices:"
+            puts "  printv (print vertices)"
+            puts "  pullv (overwrites vertices with the ones from the Displayer)"
+            puts "  vmod {Vertex_Number} {0..2 => x..z} ['+', '-'] {Value}"
+            puts "      example: vmod 0 0 + 0.1"
+            puts "      (modifies one point of a vertex)"
+            puts "  vadd {X_Value} {Y_Value} {Z_Value}"
+            puts "      (adds a vertex)"
+            puts
+            puts "Indices:"
+            puts "  printi (print indices)"
+            puts "  pulli (overwrites indices with the ones from the Displayer)"
+            puts "  imod {Index_Number} {0..2} {Value}"
+            puts "      example: imod 3 1 5"
+            puts "      (modifies one point of an index)"
+            puts "  iadd {X_Value} {Y_Value} {Z_Value}"
+            puts "      (adds an index)"
+        elsif command[1] == "--displayer"
+            puts "Displayer: Window for drawing current model"
+            puts
+            puts "Vertex Selection:"
+            puts "  Select a vertex to move:"
+            puts "  '0', '1', '2'..."
+            puts "  '=' and '-' => add or subtract the selected vertex by 1"
+            puts
+            puts "Once the desired vertex is selected:"
+            puts "  Click and drag to place"
+            puts "  Press 'r' to remove it"
+            puts
+            puts "Press 's' to save progress"
+            puts "Press 'q' to save and exit"
+            puts "Press the 'x' in the corner to quit without saving"
+        else
+            puts "Try the following: "
+            puts "help --example"
+            puts "help --model"
+            puts "help --displayer"
         end
     else
         puts "Command doesn't exist, consider checking your spelling?"

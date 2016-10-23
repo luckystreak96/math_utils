@@ -11,8 +11,6 @@ def setup
 
     @vertices = Array.new
 
-    @output = createWriter("vertices.txt")
-
     @d_font = create_font('Helvetica', 10)
     text_font @d_font
 
@@ -69,7 +67,26 @@ def keyReleased
         if @selected_vertex != nil
             @vertices.delete_at @selected_vertex
         end
+    elsif key == 's'
+        write_vertices
+    elsif key == 'q'
+        write_vertices
+        exit
     end
+end
+
+def write_vertices
+    @output = createWriter("_displayer.v")
+    counter = 0
+    @vertices.each do |p|
+        if counter != 0
+            @output.print(", ")
+        end
+        @output.print(p[0].to_s + ", " + p[1].to_s + ", " + p[2].to_s)
+        counter += 1
+    end
+    @output.flush()
+    @output.close()
 end
 
 def handle_mouse
@@ -86,20 +103,6 @@ end
 def key_handling
     if ('0'..'9') === key
         @selected_vertex = key.to_i
-    end
-
-    if key == 'q'
-        counter = 0
-        @vertices.each do |p|
-            if counter != 0
-                @output.print(", ")
-            end
-            @output.print(p[0].to_s + ", " + p[1].to_s + ", " + p[2].to_s)
-            counter += 1
-        end
-        @output.flush()
-        @output.close()
-        exit
     end
 end
 
