@@ -1,7 +1,7 @@
 #The draw command will draw once and wait for input
 #The user will add vectors etc to be drawn
 
-attr_accessor :back_color, :width, :height, :vertices, :d_font, :output, :mouseDX, :mouseDY, :selected_vertex
+attr_accessor :back_color, :width, :height, :buffer, :input_on, :indices, :vertices, :d_font, :output, :mouseDX, :mouseDY, :selected_vertex
 
 def setup
     @width = 800
@@ -9,6 +9,10 @@ def setup
 
     @selected_vertex = 0;
 
+    @input_on = false
+    @buffer = Array.new
+
+    @indices = Array.new
     @vertices = Array.new
 
     @d_font = create_font('Helvetica', 10)
@@ -18,9 +22,14 @@ def setup
     content.gsub! "[", ""
     content.gsub! "]", ""
     content.gsub! " ", ""
-    content = content.split(",").map { |s| s.to_f}
 
-    content.each do |c|
+    content_v = content.split("|")[0]
+    content_i = content.split("|")[1]
+
+    #Vertices
+    content_v = content_v.split(",").map { |s| s.to_f}
+
+    content_v.each do |c|
         @vertices.push(c.to_f)
     end
 
@@ -29,6 +38,15 @@ def setup
         vert[1] = -vert[1]#turn the y to it's opposite cause mouseY is weird
     end
 
+    #Indices
+    content_i = content_i.split(",").map { |s| s.to_i}
+
+    content_i.each do |c|
+        @indices.push(c.to_i)
+    end
+    @indices = @indices.each_slice(3).to_a#turn to slices of 3
+
+    #Rest of the setup
     size @width, @height
     frame.set_title 'Vertex Planner'
 
@@ -44,6 +62,7 @@ def draw
     key_handling
     draw_background
     draw_vertices
+    draw_indices
     fill(1, 1, 1)
     text @mouseDX.to_s, 700, 600 - 30
     text @mouseDY.to_s, 700, 600 - 15
@@ -62,19 +81,29 @@ def mouseDragged
 end
 
 def keyReleased
-    if key == '-'
-        @selected_vertex -= 1
-    elsif key == '='
-        @selected_vertex += 1
-    elsif key == 'r'
-        if @selected_vertex != nil
-            @vertices.delete_at @selected_vertex
+    if @input_on == true
+        @buffer.push key
+    else
+        if key == CODED
+            if keyCode == ENTER
+                @input_on = !@input_on
+            end
+        elsif key == '-'
+            @selected_vertex -= 1
+        elsif key == '='
+            @selected_vertex += 1
+        elsif key == 'r'
+            if @selected_vertex != nil
+                @vertices.delete_at @selected_vertex
+            end
+        elsif key == 's'
+            write_vertices
+            write_indices
+        elsif key == 'q'
+            write_vertices
+            write_indices
+            exit
         end
-    elsif key == 's'
-        write_vertices
-    elsif key == 'q'
-        write_vertices
-        exit
     end
 end
 
@@ -85,7 +114,21 @@ def write_vertices
         if counter != 0
             @output.print(", ")
         end
-        @output.print(p[0].to_s + ", " + (-p[1]).to_s + ", " + p[2].to_s)
+        @output.print(p[0].to_s + ", " + (-p[1]).to_s + ", " + p[2].to_s)#the - sign here is cuz the up-down is inversed
+        counter += 1
+    end
+    @output.flush()
+    @output.close()
+end
+
+def write_indices
+    @output = createWriter("_displayer.i")
+    counter = 0
+    @indices.each do |i|
+        if counter != 0
+            @output.print(", ")
+        end
+        @output.print(i[0].to_s + ", " + i[1].to_s + ", " + i[2].to_s)
         counter += 1
     end
     @output.flush()
@@ -126,6 +169,38 @@ def draw_vertices
 
         counter += 1
     end
+end
+
+def draw_indices
+    stroke 255, 255, 255
+    fill(1, 1, 1)
+    
+    for i in 0..(@indices.count - 1)
+        if @indices[i].count == 3#we dont want a floating index to crash the program
+            fill(1, 1, 1)
+            triangle(
+                pos(@width, @vertices[@indices[i][0]][0]), 
+                pos(@height, @vertices[@indices[i][0]][1]), 
+                pos(@width, @vertices[@indices[i][1]][0]), 
+                pos(@height, @vertices[@indices[i][1]][1]), 
+                pos(@width, @vertices[@indices[i][2]][0]), 
+                pos(@height, @vertices[@indices[i][2]][1]))
+
+            x = average @vertices[@indices[i][0]][0], @vertices[@indices[i][1]][0], @vertices[@indices[i][2]][0]
+            y = average @vertices[@indices[i][0]][1], @vertices[@indices[i][1]][1], @vertices[@indices[i][2]][1]
+
+            fill(1, 0, 0)
+            text i.to_s, (@width / 2) + (x * @width / 2), (@height / 2) + (y * @height / 2)
+        end
+    end
+end
+
+def average x, y, z
+    return (x + y + z) / 3
+end
+
+def pos size, loc
+    return (size / 2) + (loc * size / 2)
 end
 
 def draw_background

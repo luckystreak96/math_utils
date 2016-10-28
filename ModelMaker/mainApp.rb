@@ -42,6 +42,7 @@ class Models
                     mod_line += ", "
                 end
                 mod_line += i.to_s
+                counter += 1
             end
         end
 
@@ -92,6 +93,7 @@ end
 @models = Models.new "models.data"
 
 @vertices = Array.new
+@indices = Array.new
 
 def print_vertices
     puts
@@ -105,17 +107,39 @@ def print_vertices
     end
 end
 
-def get_vertices model_name
-    #Re-initialize the array
+def print_indices
+    puts
+    puts "Indices: "
+
+    counter = 0
+    points = @indices.each_slice(3).to_a
+    points.each do |p|
+        puts p*", "
+        counter += 1
+    end
+end
+
+def get_model model_name
+    #Re-initialize the arrays
     @vertices = Array.new
+    @indices = Array.new
 
     line = @models.find_model model_name
     split_line = line.split("|")
+
+    #Vertices
     split_numbers = split_line[1].split(",")
     split_numbers.each do |num|
         @vertices.push(num.to_f)
     end
     print_vertices
+
+    #indices
+    split_numbers = split_line[2].split(",")
+    split_numbers.each do |num|
+        @indices.push(num.to_i)
+    end
+    print_indices
 end
 
 def input filename
@@ -126,15 +150,20 @@ def input filename
     end
 end
 
+def run
+    system("rp5 run vertexPlanner.rb \"#{@vertices*"," + "|" + @indices*","}\"")
+    puts $?.exitstatus
+end
+
 #============== MAIN LOOP =================
 
 while (command = gets.chomp.split(" "))[0].upcase != 'EXIT'
     case command[0].upcase
-    when "GETVERT"
+    when "GETMODEL"
         if command[1] == nil
             command[1] = "bunny"
         end
-        get_vertices(command[1])
+        get_model(command[1])
     when "READ"
         if command[1] == nil or command[2] == nil
             puts "Arguments missing!"
@@ -143,15 +172,15 @@ while (command = gets.chomp.split(" "))[0].upcase != 'EXIT'
         input command[1]
     when "PRINTV"
         print_vertices
+    when "PRINTI"
+        print_indices
     when "TEST"
-        get_vertices("bunny")
-         system("rp5 run vertexPlanner.rb #{@vertices*","}")
-         puts $?.exitstatus
+        get_model("bunny")
+        run
     when "RUN"
-         system("rp5 run vertexPlanner.rb #{@vertices*","}")
-         puts $?.exitstatus
+        run
     when "SAVE"
-        @models.save @vertices, nil
+        @models.save @vertices, @indices
     when "VADD"
         if command[1] == nil or command[2] == nil or command[3] == nil
             puts "Arguments missing!"
@@ -183,6 +212,18 @@ while (command = gets.chomp.split(" "))[0].upcase != 'EXIT'
             end
             nums.each do |n|
                 @vertices.push n
+            end
+        end
+    when "PULLI"
+        @indices = Array.new
+        File.foreach("_displayer.i") do |line|
+            nums = line.split(",")
+            nums.each do |n|
+                n.gsub! " ", ""
+                n = n.to_i
+            end
+            nums.each do |n|
+                @indices.push n
             end
         end
     when "NAME"

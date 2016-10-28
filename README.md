@@ -6,5 +6,6 @@ So far:
     -Vertex and index creation and visualisation program
 
 TODO for the visualisation program:
-    -Add indices
+    -Make pressing enter again call a method to parse the buffer
+        +So it'll add the indices :)
     -Make a little more intuitive?
