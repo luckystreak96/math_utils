@@ -141,7 +141,7 @@ while (command = gets.chomp.split(" "))[0].upcase != 'EXIT'
             next
         end
         input command[1]
-    when "PRINT"
+    when "PRINTV"
         print_vertices
     when "TEST"
         get_vertices("bunny")
@@ -175,7 +175,7 @@ while (command = gets.chomp.split(" "))[0].upcase != 'EXIT'
         end
     when "PULLV"
         @vertices = Array.new
-        File.foreach("vertices.txt") do |line|
+        File.foreach("_displayer.v") do |line|
             nums = line.split(",")
             nums.each do |n|
                 n.gsub! " ", ""

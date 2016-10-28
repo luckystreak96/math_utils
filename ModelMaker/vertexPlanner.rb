@@ -25,6 +25,9 @@ def setup
     end
 
     @vertices = @vertices.each_slice(3).to_a
+    @vertices.each do |vert|
+        vert[1] = -vert[1]#turn the y to it's opposite cause mouseY is weird
+    end
 
     size @width, @height
     frame.set_title 'Vertex Planner'
@@ -82,7 +85,7 @@ def write_vertices
         if counter != 0
             @output.print(", ")
         end
-        @output.print(p[0].to_s + ", " + p[1].to_s + ", " + p[2].to_s)
+        @output.print(p[0].to_s + ", " + (-p[1]).to_s + ", " + p[2].to_s)
         counter += 1
     end
     @output.flush()
